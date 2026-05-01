@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ClearRoute AI - Emergency Network</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- Google Fonts: Orbitron for tech feel, Inter for readability -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div id="map"></div>
+  <div class="overlay-ui">
+    
+    <!-- Top Header -->
+    <header class="glass-panel">
+      <div class="logo">
+        <span class="pulse-dot"></span> ClearRoute AI
+      </div>
+      <div class="header-status">
+        <div id="clock">--:--:--</div>
+        <div id="aiStatus" class="status-badge online">AI Engine: ONLINE</div>
+      </div>
+    </header>
+
+    <!-- Left Panel: Dispatch Input -->
+    <div class="panel left-panel glass-panel">
+      <h2>Emergency Dispatch</h2>
+      
+      <div class="input-group">
+        <label>Location (GPS / Manual)</label>
+        <div class="loc-row">
+          <input type="text" id="inputStart" placeholder="Enter patient location...">
+          <button id="btnGPS" class="btn-icon" title="Get Live GPS">📍</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Condition / Symptoms</label>
+        <div class="cond-row">
+          <input type="text" id="condInput" placeholder="e.g. Chest pain and sweating">
+          <button id="btnVoice" class="btn-icon voice-btn" title="AI Voice Assistant">🎙️</button>
+        </div>
+        <div class="quick-pills">
+          <span class="pill" onclick="setCondition('Heart Attack')">Heart Attack</span>
+          <span class="pill" onclick="setCondition('Car Accident')">Car Accident</span>
+          <span class="pill" onclick="setCondition('Stroke')">Stroke</span>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Destination Hospital (Optional)</label>
+        <select id="hospOverride" class="hosp-select">
+          <option value="">-- Let AI Decide (Recommended) --</option>
+          <option value="Apollo Gleneagles">Apollo Gleneagles</option>
+          <option value="SSKM Medical">SSKM Medical</option>
+          <option value="Barrackpore City Hospital">Barrackpore City Hospital</option>
+          <option value="Fortis Hospital">Fortis Hospital</option>
+          <option value="BM Birla Heart">BM Birla Heart</option>
+          <option value="Dr B N Bose Sub Divisional Hospital">Dr B N Bose Sub Divisional Hospital</option>
+        </select>
+      </div>
+
+      <div class="input-group dropzone" id="rxDropzone">
+        <div id="rxDzIcon" class="dz-icon">📎</div>
+        <div id="rxDzTitle" class="dz-title">Upload Medical History</div>
+        <input type="file" id="rxFileInput" accept="image/*,.pdf" hidden>
+      </div>
+
+      <button id="btnDispatch" class="btn-glow pulse-red">DISPATCH EMERGENCY (Ctrl+Enter)</button>
+    </div>
+
+    <!-- Bottom Left: Hacker Terminal -->
+    <div class="panel terminal-panel glass-panel hidden" id="terminalPanel">
+      <div class="terminal-header">
+        <span>>_ System Logs</span>
+        <button onclick="document.getElementById('terminalPanel').classList.add('hidden')" style="background:transparent;border:none;color:white;cursor:pointer">x</button>
+      </div>
+      <div class="terminal-content" id="terminalLog"></div>
+    </div>
+
+    <!-- Right Panel: Live Mission Dashboard (Hidden initially) -->
+    <div class="panel right-panel glass-panel hidden" id="resultDashboard">
+      <div class="mission-header">
+        <h2>Mission Active</h2>
+        <div id="rcSev" class="sev-badge">CRITICAL</div>
+      </div>
+
+      <div class="dash-card">
+        <h3>🏥 Target Hospital</h3>
+        <h4 id="rcHospName">Apollo Gleneagles</h4>
+        <p id="rcHospAddr">58 Canal Circular Rd, Kolkata</p>
+        <div class="bed-stats">
+          <div class="stat"><span class="val" id="rcIcu">--</span> <span class="lbl">ICU Beds</span></div>
+          <div class="stat"><span class="val" id="rcGen">--</span> <span class="lbl">Gen Beds</span></div>
+        </div>
+        <div id="rcSwitchMsg" class="alert-box warning hidden"></div>
+      </div>
+
+      <div class="dash-card">
+        <h3>🛣️ Routing Intelligence</h3>
+        <div class="route-stats">
+          <div class="stat"><span class="val highlight" id="rcETA">12</span> <span class="lbl">Min ETA</span></div>
+          <div class="stat"><span class="val highlight" id="rcDist">5.2</span> <span class="lbl">KM</span></div>
+          <div class="stat"><span class="val" id="rcSaved">13</span> <span class="lbl">Min Saved</span></div>
+        </div>
+        <p id="rcRouteDesc" class="ai-msg">Priority Alpha — Signal Override Corridor Active</p>
+      </div>
+
+      <div class="dash-card">
+        <h3>🤖 AI Generated Reports</h3>
+        <div class="ai-report-group">
+          <span class="lbl">Medical Summary</span>
+          <p id="rcAiSummary" class="ai-msg"></p>
+        </div>
+        <div class="ai-report-group">
+          <span class="lbl">Traffic Alerts</span>
+          <p id="rcTrafficAlert" class="ai-msg warning"></p>
+        </div>
+        <div class="ai-report-group">
+          <span class="lbl">Hospital Alerts</span>
+          <p id="rcHospitalAlert" class="ai-msg danger"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- IoT Signal Override Visualization Overlay -->
+    <div class="iot-overlay" id="iotOverlay">
+      <div class="signal-alert hidden" id="signalAlert">
+        <span class="icon">🚥</span>
+        <span class="text">Overriding Traffic Signal #3 - Green Active</span>
+      </div>
+    </div>
+
+  </div>
+  
+  <script src="/static/script.js"></script>
+</body>
+</html>

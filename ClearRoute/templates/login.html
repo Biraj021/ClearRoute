@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - ClearRoute AI</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="panel panel--brand">
+    <div class="logo">
+      <div class="logo__mark">⚕️</div>
+      <div>
+        <div class="logo__name">ClearRoute</div>
+        <span class="logo__sub">AI EMERGENCY SYSTEM</span>
+      </div>
+    </div>
+  <!-- Radar -->
+    <div class="radar">
+      <div class="radar__outer"></div>
+      <div class="radar__mid"></div>
+      <div class="radar__inner"></div>
+      <div class="radar__cross radar__cross--h"></div>
+      <div class="radar__cross radar__cross--v"></div>
+      <div class="radar__sweep"></div>
+      <div class="radar__blip" style="--x:68%;--y:35%;--delay:0s"></div>
+      <div class="radar__blip" style="--x:42%;--y:58%;--delay:0.8s"></div>
+      <div class="radar__blip" style="--x:78%;--y:65%;--delay:1.6s"></div>
+      <div class="radar__blip" style="--x:25%;--y:30%;--delay:0.4s"></div>
+    </div>
+  <!-- brand-copy -->
+    <div class="brand-copy">
+      <h1 class="brand-copy__headline">
+        Welcome Back 👋
+      </h1>
+      <p class="brand-copy__body">
+        Login to access your emergency dashboard.
+      </p>
+    </div>
+     <!-- Status indicators -->
+    <div class="status-pills">
+      <div class="s-status">
+        <div class="s-status__dot s-status__dot--green"></div>
+        <div class="s-status__info">
+          <div class="s-status__label">AI Engine</div>
+          <div class="s-status__sub">Decision model running</div>
+        </div>
+      </div>
+      <div class="s-status">
+        <div class="s-status__dot s-status__dot--red"></div>
+        <div class="s-status__info">
+          <div class="s-status__label">Smart Routing</div>
+          <div class="s-status__sub">AI-optimized path</div>
+        </div>
+      </div>
+      <div class="s-status">
+        <div class="s-status__dot s-status__dot--cyan"></div>
+        <div class="s-status__info">
+          <div class="s-status__label">Real-Time Coord</div>
+          <div class="s-status__sub">Hospital sync active</div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Live badge -->
+    <div class="live-badge">
+      <div class="live-badge__dot"></div>
+      <span class="live-badge__txt">SYSTEM ONLINE</span>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel panel--form">
+    <div class="card">
+
+      <div class="card-head">
+        <div class="card-head__badge">🔐</div>
+        <div>
+          <div class="card-head__title">Login</div>
+          <div class="card-head__sub">Enter your credentials</div>
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <label class="flabel">Username</label>
+        <input id="username" class="finput" placeholder="Enter username">
+      </div>
+
+      <div class="fgroup">
+        <label class="flabel">Password</label>
+        <input id="password" type="password" class="finput" placeholder="Enter password">
+      </div>
+
+      <button class="btn-submit" onclick="login()">
+        <div class="btn-submit__inner">LOGIN</div>
+      </button>
+
+      <p class="form-footer-note">
+        New here? <a class="linker" href="/signup-page">Create account</a>
+      </p>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function login(){
+  fetch("/login", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.status==="success"){
+      window.location.href = "/dashboard";
+    } else {
+      alert("Invalid login");
+    }
+  });
+}
+</script>
+
+</body>
+</html>

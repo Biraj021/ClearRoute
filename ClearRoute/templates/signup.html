@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Signup - ClearRoute AI</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+  <div class="page">
+
+    <!-- LEFT PANEL -->
+    <div class="panel panel--brand">
+      <div class="logo">
+        <div class="logo__mark">⚕️</div>
+        <div>
+          <div class="logo__name">ClearRoute</div>
+          <span class="logo__sub">AI EMERGENCY SYSTEM</span>
+        </div>
+      </div>
+      <!-- Radar -->
+      <div class="radar">
+        <div class="radar__outer"></div>
+        <div class="radar__mid"></div>
+        <div class="radar__inner"></div>
+        <div class="radar__cross radar__cross--h"></div>
+        <div class="radar__cross radar__cross--v"></div>
+        <div class="radar__sweep"></div>
+        <div class="radar__blip" style="--x:68%;--y:35%;--delay:0s"></div>
+        <div class="radar__blip" style="--x:42%;--y:58%;--delay:0.8s"></div>
+        <div class="radar__blip" style="--x:78%;--y:65%;--delay:1.6s"></div>
+        <div class="radar__blip" style="--x:25%;--y:30%;--delay:0.4s"></div>
+      </div>
+      <!-- Brand Copy  -->
+      <div class="brand-copy">
+        <h1 class="brand-copy__headline">
+          Join the <em>System</em>
+        </h1>
+        <p class="brand-copy__body">
+          Create your emergency profile for faster response.
+        </p>
+      </div>
+      <!-- Status indicators -->
+      <div class="status-pills">
+        <div class="s-status">
+          <div class="s-status__dot s-status__dot--green"></div>
+          <div class="s-status__info">
+            <div class="s-status__label">AI Engine</div>
+            <div class="s-status__sub">Decision model running</div>
+          </div>
+        </div>
+        <div class="s-status">
+          <div class="s-status__dot s-status__dot--red"></div>
+          <div class="s-status__info">
+            <div class="s-status__label">Smart Routing</div>
+            <div class="s-status__sub">AI-optimized path</div>
+          </div>
+        </div>
+        <div class="s-status">
+          <div class="s-status__dot s-status__dot--cyan"></div>
+          <div class="s-status__info">
+            <div class="s-status__label">Real-Time Coord</div>
+            <div class="s-status__sub">Hospital sync active</div>
+          </div>
+        </div>
+
+        <!-- Live badge -->
+        <div class="live-badge">
+          <div class="live-badge__dot"></div>
+          <span class="live-badge__txt">SYSTEM ONLINE</span>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel panel--form">
+      <div class="card">
+
+        <div class="card-head">
+          <div class="card-head__badge">🧾</div>
+          <div>
+            <div class="card-head__title">Signup</div>
+            <div class="card-head__sub">Create your profile</div>
+          </div>
+        </div>
+
+        <!-- BASIC -->
+        <div class="fgroup">
+          <label class="flabel">Username</label>
+          <input id="username" class="finput">
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Password</label>
+          <input id="password" type="password" class="finput">
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Email</label>
+          <input id="email" type="email" class="finput" placeholder="example@gmail.com" required>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Mobile Number</label>
+          <input id="mobile" type="tel" class="finput" pattern="[0-9]{10}" placeholder="10 digit number" required>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Full Name</label>
+          <input id="name" class="finput">
+        </div>
+
+        <div class="fcols">
+          <div class="fgroup">
+            <label class="flabel">Age</label>
+            <input id="age" class="finput" type="number" min="0" step="1" inputmode="numeric" required>
+          </div>
+
+          <div class="fgroup">
+            <label class="flabel">Gender</label>
+            <select id="gender" class="finput" required>
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Location</label>
+          <input id="location" class="finput" placeholder="e.g. Kolkata">
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Medical Conditions</label>
+          <input id="diseases" class="finput" placeholder="e.g. diabetes, bp">
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Weight (kg)</label>
+          <input id="weight" class="finput" type="number" min="0" step="0.1" inputmode="decimal" required>
+        </div>
+
+        <button class="btn-submit" onclick="signup()">
+          <div class="btn-submit__inner">CREATE ACCOUNT</div>
+        </button>
+
+        <p class="form-footer-note">
+          Already have account? <a class="linker" href="/">Login</a>
+        </p>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function signup() {
+      fetch("/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: document.getElementById("username").value,
+          password: document.getElementById("password").value,
+          email: document.getElementById("email").value,
+          mobile: document.getElementById("mobile").value,
+          name: document.getElementById("name").value,
+          age: document.getElementById("age").value,
+          gender: document.getElementById("gender").value,
+          location: document.getElementById("location").value,
+          diseases: document.getElementById("diseases").value,
+          weight: document.getElementById("weight").value
+        })
+      })
+        .then(r => r.json())
+        .then(d => {
+          alert("Account created!");
+          window.location.href = "/";
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Signup failed");
+        });
+    }
+  </script>
+
+</body>
+
+</html>
