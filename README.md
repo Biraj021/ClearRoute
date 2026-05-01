@@ -19,8 +19,6 @@
 
 <br/>
 
-![Architecture](./assets/architecture.png)
-
 </div>
 
 ---
