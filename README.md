@@ -317,8 +317,8 @@ clearroute/
 
 ## 👤 Author
 
-**Biraj Acherjee**
-**Rajanya Saha**
+**Rajanya Saha**<br>
+**Biraj Acherjee**<br>
 Built for HackArena 2025 — Kolkata Zonal Round
 
 ---
