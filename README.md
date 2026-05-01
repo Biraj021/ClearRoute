@@ -1,124 +1,141 @@
-# 🚑 ClearRoute – AI Emergency Response System
+# 🚑 ClearRoute
 
-ClearRoute is an **AI-powered emergency response system** designed to reduce response time by intelligently selecting the best hospital and optimizing routes in real-time.
+### AI-Powered Emergency Response System
 
----
+> **Smart • Fast • Life-Saving**
 
-## 🚀 Features
-
-* 🧠 AI-based Severity Detection (Critical / Moderate / Low)
-* 🏥 Smart Hospital Selection (based on condition & ICU availability)
-* 🛣️ Real-Time Route Optimization using OSRM
-* 📍 Live Location Detection (GPS + manual input)
-* 🗺️ Interactive Map with Leaflet.js
-* 🎤 Voice Input for emergency conditions
-* 📄 Prescription Upload & AI Medical Summary
-* 🔁 Backend AI + Browser Simulation fallback
-* ⚡ Dynamic UI with real-time status updates
+ClearRoute is an intelligent emergency response platform that uses AI to **analyze medical conditions, select the best hospital, and generate the fastest route in real-time** — helping reduce critical response time during emergencies.
 
 ---
 
-## 🔄 System Flow
+## 🌟 Overview
 
-User → AI Analysis → Hospital Selection → Route Optimization → Dispatch Info
+In emergency situations, every second matters.
+ClearRoute automates decision-making to ensure patients reach the **right hospital, at the right time, via the fastest route**.
 
-(Current Version: Direct routing from Patient → Hospital)
+---
+
+## ⚡ Core Capabilities
+
+* 🧠 **AI Severity Detection**
+  Automatically classifies cases into Critical, Moderate, or Low
+
+* 🏥 **Smart Hospital Selection**
+  Chooses the most suitable hospital based on condition & ICU availability
+
+* 🛣️ **Real-Time Route Optimization**
+  Uses OSRM to calculate the fastest road route
+
+* 📍 **Live Location Detection**
+  GPS + manual input with reverse geocoding
+
+* 🗺️ **Interactive Map Interface**
+  Built using Leaflet.js with dynamic markers and routes
+
+* 🎤 **Voice-Based Input**
+  Detect conditions using speech recognition
+
+* 📄 **Prescription Upload**
+  Share medical notes with AI for enhanced response
+
+* 🔁 **AI + Fallback Mode**
+  Works with backend AI or browser simulation
+
+---
+
+## 🔄 Workflow
+
+```
+User Input → AI Analysis → Hospital Selection → Route Optimization → Emergency Dispatch
+```
+
+**Current Flow:**
+Patient → Hospital (Direct Intelligent Routing)
 
 ---
 
 ## 🧱 Tech Stack
 
-### Frontend
+**Frontend**
 
 * HTML, CSS, JavaScript
-* Leaflet.js (Map Rendering)
+* Leaflet.js
 
-### Backend
+**Backend**
 
 * Python (Flask)
-* REST API
+* REST APIs
 
-### AI Integration
+**AI Layer**
 
 * Claude API (optional)
-* Local Simulation Logic
+* Local Simulation Engine
 
-### APIs Used
+**External Services**
 
-* OpenStreetMap (Nominatim) – Geocoding
-* OSRM – Route Optimization
+* OpenStreetMap (Nominatim)
+* OSRM Routing Engine
 
 ---
 
-## ⚙️ How to Run
-
-### 1. Clone the repository
+## ⚙️ Local Setup
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/ClearRoute-AI-Emergency-System.git
 cd ClearRoute-AI-Emergency-System
-```
 
-### 2. Install dependencies
-
-```bash
 pip install flask flask-cors anthropic
-```
-
-### 3. Run the backend
-
-```bash
 python app.py
 ```
 
-### 4. Open in browser
-
-http://127.0.0.1:5000
-
----
-
-## 💡 Key Highlights
-
-* AI-driven emergency decision system
-* Intelligent hospital selection
-* Real-time routing and visualization
-* Works even without AI backend (fallback mode)
+Open in browser:
+👉 http://127.0.0.1:5000
 
 ---
 
-## 🚧 Limitations (Current Version)
+## 💡 What Makes It Unique
 
-* ❌ No real-time ambulance tracking
-* ❌ No nearest ambulance dispatch yet
-* ❌ No live traffic signal control integration
+* ⚡ Real-time AI decision pipeline
+* 🧭 Intelligent routing instead of static navigation
+* 🔄 Works even without backend AI
+* 🎯 Focused on real-world emergency impact
 
 ---
 
-## 🚀 Future Enhancements
+## 🚧 Current Limitations
 
-* 🚑 Nearest Ambulance Assignment System
-* 📡 Live Ambulance Tracking (like Uber/Zomato)
-* 🚦 Smart Traffic Signal Integration
-* 📱 Mobile App for Drivers
-* 🌍 Multi-city scalability
+* No ambulance dispatch system yet
+* No real-time ambulance tracking
+* No traffic signal integration
+
+---
+
+## 🚀 Future Vision
+
+* 🚑 Smart Ambulance Assignment System
+* 📡 Live Tracking (Uber-style)
+* 🚦 AI Traffic Signal Control
+* 📱 Mobile App for Emergency Drivers
+* 🌍 Smart City Integration
 
 ---
 
 ## 🌍 Impact
 
-* ⏱️ Faster emergency response
-* ❤️ Potential to save lives
-* 🤖 Automation of critical decisions
-* 📈 Scalable for smart city infrastructure
+* ⏱️ Reduces emergency response time
+* ❤️ Increases survival chances
+* 🤖 Automates critical decisions
+* 🏙️ Scalable for smart cities
 
 ---
 
 ## 👨‍💻 Author
 
-Your Name
+Biraj Acherjee
+Rajanya Saha
 
 ---
 
 ## ⭐ Support
 
-If you like this project, give it a star ⭐ on GitHub!
+If you find this project useful, consider giving it a star ⭐
