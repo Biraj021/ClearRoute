@@ -19,7 +19,8 @@
 
 <br/>
 
-![Architecture](./assets/architecture.png)
+<img width="1024" height="1536" alt="ChatGPT Image May 1, 2026, 09_12_29 PM" src="https://github.com/user-attachments/assets/3f1915d4-d094-49bf-9a81-0b37e87ab8d5" />
+
 
 </div>
 
