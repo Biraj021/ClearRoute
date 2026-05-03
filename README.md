@@ -190,7 +190,7 @@ User Reports Emergency
 ### 1. Clone the repository
 
 ```bash
-git clone [https://github.com/your-username/clearroute.git](https://github.com/Biraj021/ClearRoute)
+git clone https://github.com/Biraj021/ClearRoute
 cd clearroute
 ```
 
