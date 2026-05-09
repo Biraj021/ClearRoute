@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - ClearRoute AI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+  <div class="bg-layer">
+    <div class="bg-grid"></div>
+    <div class="bg-orb bg-orb--red"></div>
+    <div class="bg-orb bg-orb--blue"></div>
+  </div>
+<div class="page">
+
+  <!-- LEFT PANEL -->
+    <div class="panel panel--brand">
+      <div class="logo">
+        <div class="logo__mark"><i class="fas fa-ambulance"></i></div>
+        <div>
+          <div class="logo__name">ClearRoute</div>
+          <span class="logo__sub">AI EMERGENCY SYSTEM</span>
+        </div>
+      </div>
+
+      <!-- Radar -->
+      <div class="radar">
+        <div class="radar__outer"></div>
+        <div class="radar__mid"></div>
+        <div class="radar__inner"></div>
+        <div class="radar__cross radar__cross--h"></div>
+        <div class="radar__cross radar__cross--v"></div>
+        <div class="radar__sweep"></div>
+        <div class="radar__blip" style="--x:68%;--y:35%;--delay:0s"></div>
+        <div class="radar__blip" style="--x:42%;--y:58%;--delay:0.8s"></div>
+        <div class="radar__blip" style="--x:78%;--y:65%;--delay:1.6s"></div>
+        <div class="radar__blip" style="--x:25%;--y:30%;--delay:0.4s"></div>
+      </div>
+
+      <!-- Brand Copy -->
+      <div class="brand-copy">
+        <h1 class="brand-copy__headline">
+          Saving Lives <em>with AI</em>
+        </h1>
+        <p class="brand-copy__body">
+          Real-time routing, instant hospital coordination, and AI-powered dispatch — all in one system.
+        </p>
+      </div>
+
+      <!-- Feature Cards -->
+      <div class="feature-cards">
+        <div class="feature-card">
+          <div class="feature-card__icon">🤖</div>
+          <div class="feature-card__title">AI ACTIVE</div>
+          <div class="feature-card__sub">DECISION ENGINE RUNNING</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon">🎯</div>
+          <div class="feature-card__title">SMART ROUTING</div>
+          <div class="feature-card__sub">AI OPTIMIZED PATH</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon">📡</div>
+          <div class="feature-card__title">REAL-TIME COORDINATION</div>
+          <div class="feature-card__sub">TRAFFIC + HOSPITAL SYNC</div>
+        </div>
+      </div>
+
+      <!-- Live badge -->
+      <div class="live-badge">
+        <div class="live-badge__dot"></div>
+        <span class="live-badge__txt">SYSTEM ONLINE</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel panel--form">
+      <div class="card card--auth login-card">
+
+        <div class="card-head">
+          <div class="card-head__badge"><i class="fas fa-lock" style="color: var(--cyan);"></i></div>
+          <div>
+            <div class="card-head__title">Secure Login</div>
+            <div class="card-head__sub">Enter your credentials to access the terminal</div>
+          </div>
+        </div>
+
+        <form id="loginForm">
+          <div class="fgroup">
+            <label class="flabel"><i class="fas fa-user-circle" style="color: #a855f7;"></i> Username <span class="flabel__req">*</span></label>
+            <input id="username" class="finput" placeholder="Enter username" required>
+          </div>
+
+          <div class="fgroup">
+            <label class="flabel"><i class="fas fa-key" style="color: #f59e0b;"></i> Password <span class="flabel__req">*</span></label>
+            <input id="password" type="password" class="finput" placeholder="Enter password" required>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            ACCESS TERMINAL
+          </button>
+        </form>
+
+        <p class="form-footer-note">
+          New here? <a class="linker" href="/signup">Register account</a>
+        </p>
+
+      </div>
+    </div>
+
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  fetch("/login", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.status==="success"){
+      window.location.href = "/dashboard";
+    } else {
+      alert("Invalid login credentials");
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Login failed due to a network error.");
+  });
+});
+</script>
+
+</body>
+</html>
