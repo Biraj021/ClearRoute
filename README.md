@@ -19,7 +19,8 @@
 
 <br/>
 
-![Architecture](./assets/architecture.png)
+<img width="1024" height="1536" alt="WhatsApp Image 2026-05-01 at 9 13 08 PM" src="https://github.com/user-attachments/assets/a7501258-c652-49b8-acfd-341ab2112901" />
+
 
 </div>
 
