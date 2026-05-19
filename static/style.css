@@ -232,7 +232,7 @@ body {
   display: flex; flex-direction: column;
   align-items: flex-start; justify-content: flex-start;
   position: sticky; top: 0; height: 100vh;
-  padding: 30px;
+  padding: 40px 30px 30px 30px;
   /* Entry animation */
   animation: slideInLeft 0.7s ease both;
 }
@@ -268,7 +268,7 @@ body {
 .radar {
   position: relative;
   width: 240px; height: 240px;
-  margin: 10px auto;
+  margin: 25px auto 15px auto;
   flex-shrink: 0;
 }
 .radar__outer,
