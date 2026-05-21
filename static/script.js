@@ -521,7 +521,10 @@ function simulateBackend(condition, userLat, userLon, overrideHosp, historyFile)
     {name: "Barrackpore City Hospital", icu:5, gen:20, addr:"Hospital, 165, Ghosh Para Rd, Barrackpore, Kolkata, West Bengal 700120", lat:22.7680, lon:88.3580},
     {name: "Fortis Hospital", icu:8, gen:60, addr:"730, Eastern Metropolitan Bypass, Anandapur, East Kolkata Twp, Kolkata, West Bengal 700107", lat:22.5186, lon:88.4067},
     {name: "BM Birla Heart", icu:12, gen:30, addr:"1, 1, National Library Ave, Alipore, Kolkata, West Bengal 700027", lat:22.5327, lon:88.3283},
-    {name: "Dr B N Bose Sub Divisional Hospital", icu:10, gen:50, addr:"Q92C+M9V, Barrackpore Trunk Rd, Barrackpore, West Bengal 700123", lat:22.7515, lon:88.3710}
+    {name: "Dr B N Bose Sub Divisional Hospital", icu:10, gen:50, addr:"Q92C+M9V, Barrackpore Trunk Rd, Barrackpore, West Bengal 700123", lat:22.7515, lon:88.3710},
+    {name: "KPC Medical College & Hospital", icu: 5, gen: 70, addr: "1F, Raja S.C. Mullick Road, Jadavpur, Kolkata - 700032", lat: 22.49396, lon: 88.37331},
+    {name: "Baghajatin State General Hospital", icu: 4, gen: 60, addr: "Raja S.C. Mullick Road, Regent Estate, Kolkata - 700092", lat: 22.4828, lon: 88.3750},
+    {name: "Bijoygarh State General Hospital", icu: 3, gen: 55, addr: "Bijoygarh Road, Jadavpur, Kolkata - 700032", lat: 22.4875, lon: 88.3639}
   ];
 
   if (userLat && userLon) {

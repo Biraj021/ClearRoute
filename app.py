@@ -92,7 +92,10 @@ DB_HOSPITALS = [
     {"id": "h3", "name": "Barrackpore City Hospital", "type": "trauma", "icu": 5, "general": 20, "lat": 22.7680, "lon": 88.3580, "address": "165, Ghosh Para Rd, Barrackpore, Kolkata, West Bengal 700120"},
     {"id": "h4", "name": "Fortis Hospital", "type": "general", "icu": 8, "general": 60, "lat": 22.5186, "lon": 88.4067, "address": "730, Eastern Metropolitan Bypass, Anandapur, East Kolkata Twp, Kolkata, West Bengal 700107"},
     {"id": "h5", "name": "BM Birla Heart Hospital", "type": "cardiac", "icu": 12, "general": 30, "lat": 22.5327, "lon": 88.3283, "address": "1, 1, National Library Ave, Alipore, Kolkata, West Bengal 700027"},
-    {"id": "h6", "name": "Dr B N Bose Sub Divisional Hospital", "type": "general", "icu": 10, "general": 50, "lat": 22.7515, "lon": 88.3710, "address": "Q92C+M9V, Barrackpore Trunk Rd, Barrackpore, West Bengal 700123"}
+    {"id": "h6", "name": "Dr B N Bose Sub Divisional Hospital", "type": "general", "icu": 10, "general": 50, "lat": 22.7515, "lon": 88.3710, "address": "Q92C+M9V, Barrackpore Trunk Rd, Barrackpore, West Bengal 700123"},
+    {"id": "h7", "name": "KPC Medical College & Hospital", "type": "multispecialty", "icu": 5, "general": 70, "lat": 22.49396, "lon": 88.37331, "address": "1F, Raja S.C. Mullick Road, Jadavpur, Kolkata - 700032"},
+    {"id": "h8", "name": "Baghajatin State General Hospital", "type": "general", "icu": 4, "general": 60, "lat": 22.4828, "lon": 88.3750, "address": "Raja S.C. Mullick Road, Regent Estate, Kolkata - 700092"},
+    {"id": "h9", "name": "Bijoygarh State General Hospital", "type": "general", "icu": 3, "general": 55, "lat": 22.4875, "lon": 88.3639, "address": "Bijoygarh Road, Jadavpur, Kolkata - 700032"}
 ]
 
 # ---------------------------------------------------------
