@@ -6,6 +6,10 @@ const BACKEND = `${BASE_URL}/emergency`;
 // ==========================================
 // 1. INITIALIZATION & MAP SETUP
 // ==========================================
+if (window.location.protocol === "http:" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+  window.location.protocol = "https:";
+}
+
 const map = L.map("map", { zoomControl: false }).setView([22.5726, 88.3639], 13);
 L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
   maxZoom: 20,
@@ -20,6 +24,14 @@ let markers = [];
 let ambulanceMarker = null;
 let trafficLightMarkers = [];
 let animInterval = null;
+let currentStartCoords = null;
+let gpsWatchId = null;
+let userLiveMarker = null;
+let ambulanceAnimFrame = null;
+let isEmergencyActive = false;
+let activeHospitalLL = null;
+let activeApiData = null;
+let lastRouteTime = 0;
 
 // Clock Updater
 setInterval(() => {
@@ -32,6 +44,7 @@ setInterval(() => {
 document.getElementById("btnGPS").onclick = getLiveLocation;
 document.getElementById("btnDispatch").onclick = handleDispatch;
 document.getElementById("btnVoice").onclick = startVoice;
+document.getElementById("inputStart").addEventListener("input", () => { currentStartCoords = null; });
 document.addEventListener("keydown", (e) => { 
   if (e.key === "Enter" && e.ctrlKey) handleDispatch(); 
 });
@@ -39,6 +52,7 @@ document.addEventListener("keydown", (e) => {
 // Map Click to Set Origin
 map.on("click", async (e) => {
   const { lat, lng } = e.latlng;
+  currentStartCoords = [lat, lng];
   logTerminal(`Manual coordinate selection: <span class="highlight">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`);
   
   // Set placeholder while we reverse geocode
@@ -77,59 +91,124 @@ function setCondition(cond) {
 // ==========================================
 // 3. GPS & GEOCODING
 // ==========================================
+
 async function getLiveLocation() {
   const btn = document.getElementById("btnGPS");
   const input = document.getElementById("inputStart");
-  btn.style.opacity = 0.5;
-  input.value = "Detecting your location...";
-  logTerminal("📍 Detecting your location...");
-
-  // Try browser GPS first (works on localhost)
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        map.setView([lat, lon], 15);
-        const address = await reverseGeocode(lat, lon);
-        input.value = address;
-        btn.style.opacity = 1;
-        logTerminal(`✅ GPS location: <span class="highlight">${address}</span>`);
-      },
-      async () => {
-        // GPS denied or failed — fall back to IP geolocation
-        logTerminal("⚠️ GPS unavailable — using IP-based location...");
-        await getLocationByIP(btn, input);
-      },
-      { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
-    );
-  } else {
-    // Browser doesn't support GPS
-    await getLocationByIP(btn, input);
+  
+  if (gpsWatchId) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+    btn.style.opacity = 1;
+    logTerminal("🛑 Live GPS Tracking stopped.");
+    return;
   }
+  
+  if (!navigator.geolocation) {
+    logTerminal("❌ Browser does not support geolocation.");
+    return;
+  }
+
+  btn.style.opacity = 0.5;
+  input.value = "Tracking live GPS...";
+  logTerminal("📍 Initializing High-Accuracy Live GPS tracking...");
+
+  let isFirst = true;
+  
+  const handleGPSUpdate = async (pos) => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const accuracy = pos.coords.accuracy;
+    
+    // Ignore updates with terrible accuracy (> 1000m) to prevent jumps
+    if (accuracy > 1000) return;
+    
+    const prevCoords = currentStartCoords;
+    currentStartCoords = [lat, lon];
+    
+    if (!isEmergencyActive) {
+      if (!userLiveMarker) {
+        userLiveMarker = L.circleMarker([lat, lon], {
+          radius: 8, color: '#fff', fillColor: '#3b82f6', fillOpacity: 1, weight: 3
+        }).addTo(map);
+      } else {
+        if (prevCoords) animateMarkerTo(userLiveMarker, prevCoords[0], prevCoords[1], lat, lon, 1000);
+        else userLiveMarker.setLatLng([lat, lon]);
+      }
+      map.panTo([lat, lon], {animate: true, duration: 1.0});
+    } else {
+      if (ambulanceMarker) {
+        if (prevCoords) {
+           animateMarkerTo(ambulanceMarker, prevCoords[0], prevCoords[1], lat, lon, 1000);
+           const bearing = getBearing(prevCoords[0], prevCoords[1], lat, lon);
+           const emoji = document.getElementById('amb-emoji');
+           if (emoji) emoji.style.transform = `rotate(${bearing + 90}deg)`;
+        } else {
+           ambulanceMarker.setLatLng([lat, lon]);
+        }
+        map.panTo([lat, lon], {animate: true, duration: 1.0});
+        
+        // Recalculate route if moved significantly or it's been a while
+        const now = Date.now();
+        let movedDist = 0;
+        if (prevCoords) {
+          movedDist = getDistanceFromLatLonInKm(prevCoords[0], prevCoords[1], lat, lon) * 1000; // in meters
+        }
+        // Recalculate if moved > 20 meters or every 10 seconds
+        if (activeHospitalLL && (now - lastRouteTime > 10000 || movedDist > 20)) {
+          lastRouteTime = now;
+          updateLiveRoute(lat, lon);
+          logTerminal(`🔄 Recalculating route from new GPS coords...`);
+        }
+      }
+    }
+    
+    if (isFirst) {
+      isFirst = false;
+      map.setZoom(18);
+      const address = await reverseGeocode(lat, lon);
+      input.value = address;
+      btn.style.opacity = 1;
+      logTerminal(`✅ Real GPS Locked [Accuracy: ${Math.round(accuracy)}m]: <span class="highlight">${address}</span>`);
+    } else {
+      // Optional debug log for tracking continuous movement
+      // logTerminal(`📡 GPS Update: ${lat.toFixed(5)}, ${lon.toFixed(5)}`);
+    }
+  };
+
+  const handleGPSError = (err) => {
+    let errorMsg = err.message;
+    if (err.code === 1) errorMsg = "Permission denied. Please allow location access in your browser.";
+    else if (err.code === 2) errorMsg = "Position unavailable. Device cannot determine location.";
+    else if (err.code === 3) errorMsg = "Timeout waiting for GPS signal.";
+    
+    logTerminal(`❌ True GPS Error: ${errorMsg}`);
+    btn.style.opacity = 1;
+    input.value = "";
+    
+    if (gpsWatchId) {
+      navigator.geolocation.clearWatch(gpsWatchId);
+      gpsWatchId = null;
+    }
+  };
+
+  gpsWatchId = navigator.geolocation.watchPosition(
+    handleGPSUpdate,
+    handleGPSError,
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+  );
 }
 
-async function getLocationByIP(btn, input) {
-  try {
-    // ipapi.co — free, no key, reliable
-    const res = await fetch("https://ipapi.co/json/");
-    const d = await res.json();
-    if (d && d.latitude) {
-      const lat = d.latitude;
-      const lon = d.longitude;
-      const address = `${d.city}, ${d.region}, ${d.country_name}`;
-      map.setView([lat, lon], 13);
-      input.value = address;
-      logTerminal(`✅ Location detected: <span class="highlight">${address}</span>`);
-    } else {
-      input.value = "";
-      logTerminal("❌ Could not detect location. Please type it manually.");
-    }
-  } catch (e) {
-    input.value = "";
-    logTerminal("❌ Location detection failed. Please type your location.");
-  }
-  if (btn) btn.style.opacity = 1;
+// Haversine distance helper for tracking movement thresholds
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180); 
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+            Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  return R * c;
 }
 
 async function reverseGeocode(lat, lon) {
@@ -272,7 +351,7 @@ async function handleDispatch() {
 
   try {
     logTerminal(`Geocoding incident origin: <span class="highlight">${loc}</span>`);
-    const startLL = await geocode(loc);
+    const startLL = currentStartCoords ? currentStartCoords : await geocode(loc);
     
     cleanMap();
     map.setView(startLL, 16);
@@ -314,8 +393,13 @@ async function handleDispatch() {
 
     logTerminal(`[COMMUNICATIONS] Alerting Traffic Police HQ: Clear corridor for incoming ambulance...`);
 
+    // Update State for Live Tracking
+    isEmergencyActive = true;
+    activeHospitalLL = [apiData.hospital.lat, apiData.hospital.lon];
+    activeApiData = apiData;
+
     // Map Drawing and Animation
-    const destLL = [apiData.hospital.lat, apiData.hospital.lon];
+    const destLL = activeHospitalLL;
     logTerminal(`Routing Agent: Fetching optimized OSRM polyline.`);
     await drawRouteAndAnimate(startLL, destLL, apiData);
 
@@ -337,17 +421,31 @@ async function handleDispatch() {
 // 7. MAP RENDERING & AMBULANCE ANIMATION
 // ==========================================
 function cleanMap() {
+  isEmergencyActive = false;
+  activeHospitalLL = null;
+  activeApiData = null;
   if(mapRoute) map.removeLayer(mapRoute);
   if(mapRouteGlow) map.removeLayer(mapRouteGlow);
   if(ambulanceMarker) map.removeLayer(ambulanceMarker);
+  if(userLiveMarker) { map.removeLayer(userLiveMarker); userLiveMarker = null; }
   markers.forEach(m => map.removeLayer(m));
   trafficLightMarkers.forEach(m => map.removeLayer(m));
   markers = []; 
   trafficLightMarkers = [];
   clearInterval(animInterval);
+  if (ambulanceAnimFrame) cancelAnimationFrame(ambulanceAnimFrame);
+}
+
+function validateCoordinates(lat, lon) {
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    throw new Error(`Invalid coordinates detected: lat=${lat}, lon=${lon}`);
+  }
 }
 
 async function drawRouteAndAnimate(startLL, destLL, apiData) {
+  validateCoordinates(startLL[0], startLL[1]);
+  validateCoordinates(destLL[0], destLL[1]);
+
   // Fetch SHORTEST driving route from OSRM
   const url = `https://router.project-osrm.org/route/v1/driving/${startLL[1]},${startLL[0]};${destLL[1]},${destLL[0]}?overview=full&geometries=geojson&alternatives=false&steps=false`;
   const res = await fetch(url);
@@ -384,6 +482,7 @@ async function drawRouteAndAnimate(startLL, destLL, apiData) {
    
   map.fitBounds(mapRoute.getBounds(), {padding: [50, 50]});
 
+  console.log("Target Hospital:", apiData.hospital.name, apiData.hospital.lat, apiData.hospital.lon);
   markers.push(L.marker(startLL).addTo(map).bindPopup("Incident Origin"));
   markers.push(L.marker(destLL).addTo(map).bindPopup(`<b>${apiData.hospital.name}</b><br>Target Destination<br><br>🛏️ ICU: ${apiData.hospital.icu} | Gen: ${apiData.hospital.gen}`));
 
@@ -391,6 +490,8 @@ async function drawRouteAndAnimate(startLL, destLL, apiData) {
   if (apiData.nearby_hospitals) {
     apiData.nearby_hospitals.forEach(h => {
       if (h.name !== apiData.hospital.name) {
+        console.log("Nearby Hospital:", h.name, h.lat, h.lon);
+        validateCoordinates(h.lat, h.lon);
         const marker = L.marker([h.lat, h.lon], {
           icon: L.divIcon({html: '🏥', className:'secondary-hosp-icon', iconSize:[20,20]})
         }).addTo(map).bindPopup(`<b>${h.name}</b><br>Alternative Option`);
@@ -415,14 +516,72 @@ async function drawRouteAndAnimate(startLL, destLL, apiData) {
 
   // Place Ambulance at start and keep it stationary
   ambulanceMarker = L.marker([coords[0][1], coords[0][0]], {
-    icon: L.divIcon({html: '<div id="amb-emoji" style="transition: transform 0.2s ease;">🚑</div>', className:'ambulance-icon', iconSize:[28,28]})
+    icon: L.divIcon({html: '<div id="amb-emoji" style="transition: transform 0.2s linear; display: inline-block;">🚑</div>', className:'ambulance-icon', iconSize:[28,28]})
   }).addTo(map);
 
-  logTerminal(`Ambulance positioned at incident origin. Route highlighted on map.`);
+  logTerminal(`Ambulance positioned at incident origin. Route highlighted on map. Commencing live navigation...`);
 
   // Show signal alert for demo
   if (trafficLightMarkers.length > 0) {
     showSignalAlert(`IoT Traffic Override Corridor Active — Signals set to GREEN`);
+  }
+}
+
+function getBearing(lat1, lon1, lat2, lon2) {
+  const toRad = (deg) => deg * Math.PI / 180;
+  const toDeg = (rad) => rad * 180 / Math.PI;
+  const dLon = toRad(lon2 - lon1);
+  const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+  const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
+function animateMarkerTo(marker, oldLat, oldLon, newLat, newLon, duration) {
+  const startTime = performance.now();
+  function step(time) {
+    let elapsed = time - startTime;
+    let progress = Math.min(elapsed / duration, 1);
+    
+    const currentLat = oldLat + (newLat - oldLat) * progress;
+    const currentLon = oldLon + (newLon - oldLon) * progress;
+    marker.setLatLng([currentLat, currentLon]);
+    
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+async function updateLiveRoute(lat, lon) {
+  if (!activeHospitalLL || !isEmergencyActive) return;
+  try {
+    const startLL = [lat, lon];
+    const destLL = activeHospitalLL;
+    const url = `https://router.project-osrm.org/route/v1/driving/${startLL[1]},${startLL[0]};${destLL[1]},${destLL[0]}?overview=full&geometries=geojson&alternatives=false&steps=false`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.routes || data.routes.length === 0) return;
+    
+    const geoj = data.routes[0].geometry;
+    const distance_km = (data.routes[0].distance / 1000).toFixed(1);
+    const duration_min = Math.ceil(data.routes[0].duration / 60);
+    
+    if(mapRoute) map.removeLayer(mapRoute);
+    if(mapRouteGlow) map.removeLayer(mapRouteGlow);
+    
+    const isCritical = activeApiData && (typeof activeApiData.severity === 'object' ? activeApiData.severity.level : activeApiData.severity) === "CRITICAL";
+    const color = isCritical ? "#ef4444" : "#06b6d4";
+    
+    mapRouteGlow = L.geoJSON(geoj, {style: {color, weight: 12, opacity: 0.2}}).addTo(map);
+    mapRoute = L.geoJSON(geoj, {style: {color, weight: 4, opacity: 0.8, dashArray:"10 10"}}).addTo(map);
+    
+    const rcETA = document.getElementById("rcETA");
+    const rcDist = document.getElementById("rcDist");
+    if(rcETA) rcETA.innerText = duration_min;
+    if(rcDist) rcDist.innerText = distance_km;
+  } catch (e) {
+    console.error("Live route update failed", e);
   }
 }
 
@@ -515,7 +674,10 @@ function simulateBackend(condition, userLat, userLon, overrideHosp, historyFile)
   const c = condition.toLowerCase();
   const sev = (c.includes("heart") || c.includes("attack") || c.includes("stroke") || c.includes("accident") || c.includes("unconscious")) ? "CRITICAL" : "MODERATE";
   
-  const HOSP_DB = [
+  const lat = userLat || 22.5726;
+  const lon = userLon || 88.3639;
+
+  const DB_HOSPITALS = [
     {name: "Apollo Gleneagles", icu:0, gen:45, addr:"58, Canal Circular Rd, Kadapara, Phoolbagan, Kankurgachi, Kolkata, West Bengal 700054", lat:22.5748, lon:88.4016},
     {name: "SSKM Medical", icu:15, gen:80, addr:"SSKM Hospital Rd, Bhowanipore, Kolkata, West Bengal 700020", lat:22.5399, lon:88.3417},
     {name: "Barrackpore City Hospital", icu:5, gen:20, addr:"Hospital, 165, Ghosh Para Rd, Barrackpore, Kolkata, West Bengal 700120", lat:22.7680, lon:88.3580},
@@ -527,6 +689,8 @@ function simulateBackend(condition, userLat, userLon, overrideHosp, historyFile)
     {name: "Bijoygarh State General Hospital", icu: 3, gen: 55, addr: "Bijoygarh Road, Jadavpur, Kolkata - 700032", lat: 22.4875, lon: 88.3639}
   ];
 
+  let HOSP_DB = [...DB_HOSPITALS]; // Use real coordinates for overrides
+
   if (userLat && userLon) {
     HOSP_DB.sort((a,b) => calcDist(userLat, userLon, a.lat, a.lon) - calcDist(userLat, userLon, b.lat, b.lon));
   }
@@ -536,8 +700,19 @@ function simulateBackend(condition, userLat, userLon, overrideHosp, historyFile)
   let switch_reason = "";
   
   if (overrideHosp) {
-    const forced = HOSP_DB.find(h => h.name === overrideHosp);
-    if (forced) best_hospital = forced;
+    const forced = DB_HOSPITALS.find(h => h.name === overrideHosp);
+    if (forced) {
+      best_hospital = forced;
+    } else {
+      best_hospital = {
+        name: overrideHosp,
+        icu: 10,
+        gen: 50,
+        addr: "Custom selected facility",
+        lat: lat + 0.015,
+        lon: lon + 0.015
+      };
+    }
   } else {
     if(sev === "CRITICAL" && best_hospital.icu === 0) {
       const orig_name = best_hospital.name;

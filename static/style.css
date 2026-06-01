@@ -800,3 +800,30 @@ body {
   .dob-row { flex-direction: column; align-items: flex-start; }
   .age-chip { align-self: flex-start; }
 }
+
+@media (max-width: 768px) {
+  .overlay-ui {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+    pointer-events: none;
+  }
+  .left-panel, .right-panel, .terminal-panel {
+    position: relative;
+    width: 100%;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    pointer-events: auto;
+    max-height: none;
+  }
+  header {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
